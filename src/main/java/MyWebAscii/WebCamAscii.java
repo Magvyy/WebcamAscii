@@ -1,5 +1,4 @@
 package MyWebAscii;
-import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -20,11 +19,16 @@ public class WebCamAscii {
 
     }
 
-    public static BufferedImage loadImage(String imgName) {
+    /**
+     * Loads an image from its path relative to the working directory.
+     * @param imgPath The relative path of the image compared to the working directory.
+     * @return the image.
+     */
+    public static BufferedImage loadImage(String imgPath) {
         String path = new File("").getAbsolutePath();
         System.out.println(path);
         try {
-            BufferedImage img = ImageIO.read(new File(path + "\\" + imgName));
+            BufferedImage img = ImageIO.read(new File(path + "\\" + imgPath));
             return img;
         }
         catch (IOException e) {
@@ -33,11 +37,26 @@ public class WebCamAscii {
         return null;
     }
 
-    public static StringBuilder printAsciiImage(BufferedImage img, int scale) throws IOException, InterruptedException {
+    /**
+     * Takes an image and returns a (potentially downscaled) ascii visual string of the image.
+     * @param img the image you wish to turn into ascii.
+     * @return an ascii representation of an image.
+     * @throws InterruptedException
+     */
+    public static StringBuilder getAsciiFromImage(BufferedImage img) throws InterruptedException {
+        return getAsciiFromImage(img, 1);
+    }
+
+    /**
+     * Takes an image and returns a (potentially downscaled) ascii visual string of the image.
+     * @param img the image you wish to turn into ascii.
+     * @param scale the downscaling factor.
+     * @return an ascii representation of an image.
+     * @throws InterruptedException
+     */
+    public static StringBuilder getAsciiFromImage(BufferedImage img, int scale) throws InterruptedException {
         int width = img.getWidth();
         int height = img.getHeight();
-        // System.out.println(width + " : " + height);
-        // return new StringBuilder();
         int cols = width / scale;
         int rows = height / scale;
 
@@ -48,13 +67,6 @@ public class WebCamAscii {
                 q.add(arr);
             }
         }
-
-        // StringBuilder str = new StringBuilder();
-        // str.setLength(rows * (cols + 1));
-        // for (int y = 1; y < rows; y++) {
-        //     int index = y * (cols + 1) - 1;
-        //     str.setCharAt(index, '\n');
-        // }
 
         StringBuilder str = new StringBuilder();
         str.setLength(rows * (2 * cols + 1));
@@ -89,6 +101,14 @@ public class WebCamAscii {
         return str;
     }
 
+    /**
+     * 
+     * @param img the image.
+     * @param scale the downscaling factor.
+     * @param i the upper left x coordinate of this partition of the image.
+     * @param j the upper left y coordinate of this partition of the image.
+     * @return the average grayscale pixel value of this partition of the image.
+     */
     public static int averagePixel(BufferedImage img, int scale, int i, int j) {
         int pixel = 0;
         for (int x = 0; x < scale; x++) {
@@ -106,19 +126,22 @@ public class WebCamAscii {
     }
 
 
-    public static void main(String [] args) throws IOException, InterruptedException, AWTException {
+    /**
+     * Opens the default webcam of the operating system, captures an image,
+     * then converts that image into a 1-to-1 ascii representation, and prints it.
+     * To properly use this file, use a terminal, navigate to the project folder, and
+     * use the following command: "mvn exec:java -Dexec.mainClass="MyWebAscii.WebCamAscii"".
+     * Make sure to change font size so that you can see the image properly.
+     */
+    public static void main(String [] args) throws InterruptedException {
         Webcam webcam = Webcam.getDefault();
         webcam.open();
         while (true) {
             BufferedImage capture = webcam.getImage();
-            StringBuilder str = printAsciiImage(capture, 1);
+            StringBuilder str = getAsciiFromImage(capture);
             System.out.print("\033[H\033[2J");  
             System.out.flush();
             System.out.println(str);
         }
-
-
-        // asciiImage(mcImg, scale, file + ".txt");
-        // printAsciiImage(mcImg, 1);
     }
 }
